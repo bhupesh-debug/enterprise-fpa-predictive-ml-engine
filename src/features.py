@@ -18,10 +18,10 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     data['variance_pct'] = data['variance_amount'] / (data['budget_allocated'] + 1e-5)
     data['spend_per_head'] = data['actual_spend'] / (data['headcount'] + 1e-5)
     
-    # Calendar & Behavioral features: Quarter-End Budget Flush Index
+    # Calendar & Fiscal features
     data['month'] = data['period_date'].dt.month
     data['quarter'] = data['period_date'].dt.quarter
-    data['quarter_end_compression_index'] = data['month'].isin([3, 6, 9, 12]).astype(int)
+    data['is_quarter_end'] = data['month'].isin([3, 6, 9, 12]).astype(int)
     
     # Grouped historical lags (strictly backward-looking to eliminate lookahead bias)
     group_cols = ['entity_id', 'cost_center', 'gl_account']
@@ -46,7 +46,7 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
 def wape(y_true, y_pred) -> float:
     """
     Weighted Absolute Percentage Error (WAPE)
-    Weights error by financial volume ($USD), standard in institutional treasury & corporate controllership.
+    Weights error by financial volume ($USD), standard in institutional treasury & FP&A.
     """
     y_true_arr = np.array(y_true)
     y_pred_arr = np.array(y_pred)

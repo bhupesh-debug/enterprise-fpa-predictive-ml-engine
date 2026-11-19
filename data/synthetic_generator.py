@@ -1,7 +1,7 @@
 """
 Synthetic Multi-Entity Financial Subledger Data Generator
 Simulates SAP / NetSuite general ledger records across enterprise business units,
-incorporating macroeconomic drivers (SOFR, CPI, 10-2 Treasury spread) and real-world variance anomalies.
+incorporating macroeconomic drivers (SOFR, CPI) and real-world variance anomalies.
 """
 
 import numpy as np
@@ -15,15 +15,14 @@ def generate_fpa_data(n_months: int = 48, random_state: int = 42) -> pd.DataFram
     np.random.seed(random_state)
     dates = pd.date_range(start="2021-01-01", periods=n_months, freq="MS")
     entities = ["US_Banking", "Enterprise_Ops", "India_Sub"]
-    cost_centers = ["IT_Infra", "Sales_GTM", "Operations", "Treasury", "Compliance"]
+    cost_centers = ["IT_Infra", "Sales_GTM", "Operations", "Treasury"]
     gl_accounts = ["6100_VendorConsult", "6200_CloudCompute", "6300_Travel", "6400_Headcount"]
     
     rows = []
     for d in dates:
-        # Macro exogenous factors (SOFR rate hike regime, CPI trend, and Treasury spread)
-        sofr = 0.5 + (4.8 / (1 + np.exp(-(d.year - 2022) * 2))) + np.random.normal(0, 0.08)
-        cpi = 260 + (d.year - 2021) * 12 + d.month * 0.8 + np.random.normal(0, 0.4)
-        spread_10_2 = -0.5 + (d.year - 2023) * 0.3 + np.random.normal(0, 0.1)
+        # Macro exogenous factors (SOFR rate hike regime and CPI trend)
+        sofr = 0.5 + (4.8 / (1 + np.exp(-(d.year - 2022) * 2))) + np.random.normal(0, 0.1)
+        cpi = 260 + (d.year - 2021) * 12 + d.month * 0.8 + np.random.normal(0, 0.5)
         
         for e in entities:
             for cc in cost_centers:
@@ -33,15 +32,15 @@ def generate_fpa_data(n_months: int = 48, random_state: int = 42) -> pd.DataFram
                         "6200_CloudCompute": 350000,
                         "6300_Travel": 80000,
                         "6400_Headcount": 750000
-                    }[gl] * (1.6 if e == "US_Banking" else 0.85)
+                    }[gl] * (1.5 if e == "US_Banking" else 0.8)
                     
-                    headcount = np.random.randint(40, 320)
-                    # Seasonality & Quarter-End compression ("Budget Flush" behavior)
-                    seasonal_factor = 1.18 if d.month in [3, 6, 9, 12] else 0.97
+                    headcount = np.random.randint(40, 300)
+                    # Seasonality & Quarter-End compression
+                    seasonal_factor = 1.15 if d.month in [3, 6, 9, 12] else 0.98
                     macro_shock = 1.0 + (sofr * 0.015 if gl in ["6100_VendorConsult", "6200_CloudCompute"] else 0.0)
                     
-                    budget = base_spend * seasonal_factor * (1 + np.random.normal(0, 0.025))
-                    actual = budget * macro_shock * (1 + np.random.normal(0.01, 0.045))
+                    budget = base_spend * seasonal_factor * (1 + np.random.normal(0, 0.03))
+                    actual = budget * macro_shock * (1 + np.random.normal(0.01, 0.05))
                     
                     # Inject controlled leakage anomalies in 2% of records (simulating unapproved spend)
                     if np.random.rand() < 0.02:
@@ -56,8 +55,7 @@ def generate_fpa_data(n_months: int = 48, random_state: int = 42) -> pd.DataFram
                         "actual_spend": round(actual, 2),
                         "headcount": headcount,
                         "sofr_rate": round(sofr, 2),
-                        "cpi_index": round(cpi, 2),
-                        "treasury_spread_10_2": round(spread_10_2, 2)
+                        "cpi_index": round(cpi, 2)
                     })
                     
     df = pd.DataFrame(rows)
