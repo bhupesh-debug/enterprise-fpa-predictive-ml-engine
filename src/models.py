@@ -14,9 +14,9 @@ class FPAModelPipeline:
         self.random_state = random_state
         self.feature_cols = [
             'entity_id', 'cost_center', 'gl_account', 'budget_allocated', 'actual_spend',
-            'headcount', 'sofr_rate', 'cpi_index', 'variance_pct', 'spend_per_head',
-            'is_quarter_end', 'actual_lag_1m', 'actual_lag_2m', 'actual_lag_3m',
-            'rolling_mean_3m', 'rolling_var_3m'
+            'headcount', 'sofr_rate', 'cpi_index', 'treasury_spread_10_2', 'variance_pct',
+            'spend_per_head', 'quarter_end_compression_index', 'actual_lag_1m', 'actual_lag_2m',
+            'actual_lag_3m', 'rolling_mean_3m', 'rolling_var_3m'
         ]
         self.target_col = 'target_next_spend'
         
