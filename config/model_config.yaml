@@ -1,0 +1,38 @@
+model:
+  name: "Enterprise-FPA-LightGBM-Forecaster"
+  version: "1.0.0"
+  objective: "huber"
+  n_estimators: 300
+  learning_rate: 0.03
+  num_leaves: 31
+  random_state: 42
+
+anomaly_detection:
+  algorithm: "IsolationForest"
+  contamination: 0.02
+  random_state: 42
+
+features:
+  categorical:
+    - entity_id
+    - cost_center
+    - gl_account
+  numerical:
+    - budget_allocated
+    - actual_spend
+    - headcount
+    - sofr_rate
+    - cpi_index
+    - variance_pct
+    - spend_per_head
+    - is_quarter_end
+    - actual_lag_1m
+    - actual_lag_2m
+    - actual_lag_3m
+    - rolling_mean_3m
+    - rolling_var_3m
+  target: "target_next_spend"
+
+benchmarks:
+  max_acceptable_wape: 0.08
+  target_wape: 0.05
